@@ -1,0 +1,275 @@
+'Start of Constants Customization Section
+Const WqSonde = "WQ_SERIAL_BURST"
+'Value = "WQ_SDI12"
+'Value = "WQ_SERIAL"
+'Value = "WQ_SERIAL_BURST"
+'Value = "NONE"
+
+#If WqSonde <> "NONE" Then
+  #If WqSonde = "WQ_SERIAL" OR WqSonde = "WQ_SERIAL_BURST" Then 'immediately define serial port settings
+    Sub OpenWQPort
+      #If LoggerType = CR6 'For a CR6 the port require a different configuration from a CR1000
+        If UseCommsOneForSonde = True Then
+          SerialOpen (WqSerialPort,WqBaud,19,0,2000,1)'Max232 requires us to use TTL language, use comms mode one.The Max232 also converts to a binary like signal and requires serial open format of 19 to function. Standard code zero results in a communication error.
+        ElseIf UseCommsZeroForSonde = True Then
+          SerialOpen (WqSerialPort,WqBaud,0,0,2000,0)'No Max232 is present so we uses standard RS232 language
+        Else
+          SerialOpen (WqSerialPort,WqBaud,0,0,2000)'In case we use a non-stanadard port configuration this is the generic code
+        EndIf
+      #Else 'else it is a CR1000
+        If (IsWqMax232 = True) AND (WqSerialPort <> ComME) Then
+          SerialOpen (WqSerialPort,WqBaud,19,0,2000)'need to use TTL if Max232 is present
+        Else
+          SerialOpen (WqSerialPort,WqBaud,0,0,2000)'standard RS232 language works if no Max232 is present
+        EndIf
+      #EndIf
+    EndSub
+  #EndIf
+
+  Sub ParamCheck 'gets the parameter codes from the EXO in whichever order they're being output
+    #If WqSonde = "WQ_SERIAL" OR WqSonde = "WQ_SERIAL_BURST" Then ' If it's a serial connection
+      Call OpenWQPort 'open the port
+      SerialOut (WqSerialPort,"0" + CHR(13),"?Command",3,10) 'a zero is required to wake up the sonde for other commands to be recieved. if not sonde will respond with"command?"
+      Delay (1,10,mSec)
+      SerialOut (WqSerialPort,"setsonde 0"+CHR(13)+CHR(10),"OK",3,50)'configure logger/SOA to talk to the top sonde
+      Delay (1,10,mSec)
+      SerialOut (WqSerialPort,"0" + CHR(13),"?Command",3,10) 'after chosing what sonde to talk to, another zero must be sent to wake it up again.
+      Delay (1,10,mSec)
+      SerialOut (WqSerialPort,"para" + CHR(13) + CHR(10),"",1,0)'gives the parameter order
+      Delay (1,300,mSec)
+      SerialIn (WqIn,WqSerialPort,100,&H0D0A,200)
+      WqIn = Trim(WqIn)
+      SplitStr (WqParamOrder,WqIn,CHR(32),WqNparams,0)
+      NoSondeTrig = InStr(1,WqIn,"Sonde",2)
+      Delay (1,200,mSec)
+      SerialFlush(WqSerialPort)
+    #EndIf
+    #If WqSonde = "WQ_SDI12" Then
+      BUILD SDI12 PARAMETER CHECK ROUTINE
+    #EndIf
+  EndSub
+
+  Sub DefineWqLocs 'Define Locations for parameter order
+    WqLocDate = t(1)
+    WqLocTime = t(2)
+    WqLocTempC = t(3)
+    WqLocTempF = t(4)
+    WqLocCond = t(5)
+    WqLocTurbFNU = t(6)
+    WqLocDoSat = t(7)
+    WqLocDOmgL = t(8)
+    WqLocDepthFt = t(9)
+    WqLocDepthMeters = t(10)
+    WqLocBatt = t(11)
+    WqLocpH = t(12)
+    WqLocpHmV = t(13)
+    WqLocORP = t(14)
+    WqLocChlugL = t(15)
+    WqLocChlRFU = t(16)
+    WqLocBGApcRFU = t(17)
+    WqLocBGApcugL = t(18)
+    WqLocFDomRFU = t(19)
+    WqLocFDomQSU = t(20)
+    WqLocNH4 = t(21)
+    WqLocNO3 = t(22)
+    WqLocCL = t(23)
+    WqLocWiperPos = t(24)
+  EndSub
+
+  Sub DefineParamsOrder 'used to automatically determine which order parameters are coming in
+    t(1) = FindSpa (DateCode,DateCode,1,WqParamOrder())
+    t(2) = FindSpa (TimeCode,TimeCode,1,WqParamOrder())
+    t(3) = FindSpa (TempCCode,TempCCode,1,WqParamOrder())
+    t(4) = FindSpa (TempFCode,TempFCode,1,WqParamOrder())
+    t(5) = FindSpa (CondCode,CondCode,1,WqParamOrder())
+    t(6) = FindSpa (TurbFNUCode,TurbFNUCode,1,WqParamOrder())
+    t(7) = FindSpa (DoSatCode,DoSatCode,1,WqParamOrder())
+    t(8) = FindSpa (DOmgLCode,DOmgLCode,1,WqParamOrder())
+    t(9) = FindSpa (DepthFtCode,DepthFtCode,1,WqParamOrder())
+    t(10) = FindSpa (DepthMetersCode,DepthMetersCode,1,WqParamOrder())
+    t(11) = FindSpa (BattCode,BattCode,1,WqParamOrder())
+    t(12) = FindSpa (pHCode,pHCode,1,WqParamOrder())
+    t(13) = FindSpa (pHmVCode,pHmVCode,1,WqParamOrder())
+    t(14) = FindSpa (ORPCode,ORPCode,1,WqParamOrder())
+    t(15) = FindSpa (ChlugLCode,ChlugLCode,1,WqParamOrder())
+    t(16) = FindSpa (ChlRFUCode,ChlRFUCode,1,WqParamOrder())
+    t(17) = FindSpa (BGApcRFUCode,BGApcRFUCode,1,WqParamOrder())
+    t(18) = FindSpa (BGApcugLCode,BGApcugLCode,1,WqParamOrder())
+    t(19) = FindSpa (FDomRFU,FDomRFU,1,WqParamOrder())
+    t(20) = FindSpa (FDomQSU,FDomQSU,1,WqParamOrder())
+    t(21) = FindSpa (NH4Code,NH4Code,1,WqParamOrder())
+    t(22) = FindSpa (NO3Code,NO3Code,1,WqParamOrder())
+    t(23) = FindSpa (CLCode,CLCode,1,WqParamOrder())
+    t(24) = FindSpa (WiperPos,WiperPos,1,WqParamOrder())
+  EndSub
+
+  Sub ParseData 'Parses data into correct locations
+    If (WqData(WqLocDate) <> NAN) AND (WqData(WqLocDate)<> 0) AND (WqData(WqLocTime)<> OldEXOTime)  Then
+      OldEXOTime = WqData(WqLocTime)
+      WqError = False
+      WqDead = False
+      WqErrCount = 0
+      WqPwrCycleCnt = 0
+    Else
+      WqError = True
+      OldEXOTime = WqData(WqLocTime)
+      #If DWRSonde = False Then
+        Call WQ_Mark_Bad
+        Exit Sub
+      #EndIf
+    EndIf
+    If WqLocDate > 0 Then WqDate = WqData(WqLocDate)
+    If WqLocTime > 0 Then WqTime = WqData(WqLocTime)
+    If WqLocTempC > 0 Then WqTempC = WqData(WqLocTempC)
+    If WqLocTempF > 0 Then WqTempF = WqData(WqLocTempF)
+    If WqLocCond > 0 Then WqSpCond = WqData(WqLocCond)
+    If WqLocTurbFNU > 0 Then WqTurbFNU = WqData(WqLocTurbFNU)
+    If WqLocDoSat > 0 Then WqDOSat = WqData(WqLocDoSat)
+    If WqLocDOmgL > 0 Then WqDOMgl = WqData(WqLocDOmgL)
+    If WqLocDepthFt > 0 Then WqDepthFt = WqData(WqLocDepthFt)
+    If WqLocDepthMeters > 0 Then WqDepthMeters = WqData(WqLocDepthMeters)
+    If WqLocBatt > 0 Then WqBattV = WqData(WqLocBatt)
+    If WqLocpH > 0 Then WqPH = WqData(WqLocpH)
+    If WqLocpHmV > 0 Then WqPHmv = WqData(WqLocpHmV)
+    If WqLocORP > 0 Then WqORP = WqData(WqLocORP)
+    If WqLocChlugL > 0 Then WqChlugL = WqData(WqLocChlugL)
+    If WqLocChlRFU > 0 Then WqChlRFU = WqData(WqLocChlRFU)
+    If WqLocBGApcRFU > 0 Then WqBGArfu = WqData(WqLocBGApcRFU)
+    If WqLocBGApcugL > 0 Then WqBGAugl = WqData(WqLocBGApcugL)
+    If WqLocFDomRFU > 0 Then WqFDOMrfu = WqData(WqLocFDomRFU)
+    If WqLocFDomQSU > 0 Then WqFDOMqsu = WqData(WqLocFDomQSU)
+    If WqLocNH4 > 0 Then WqNH4mgl = WqData(WqLocNH4)
+    If WqLocNO3 > 0 Then WqNO3mgl = WqData(WqLocNO3)
+    If WqLocCL > 0 Then WqCLmgl = WqData(WqLocCL)
+    If WqLocWiperPos > 0 Then WqWiperPos = WqData(WqLocWiperPos)
+  EndSub
+
+  #If WqSonde = "WQ_SERIAL" OR WqSonde = "WQ_SERIAL_BURST" Then 'Build serial related subs
+    Sub SetDelim 'sets the EXO to comma delimited output
+      Call OpenWQPort
+      SerialOut (WqSerialPort,"0" + CHR(13),"?Command",3,10)
+      Delay (1,10,mSec)
+      SerialOut (WqSerialPort,"setsonde 0"+CHR(13)+CHR(10),"OK",3,50)'set to communicate to top sonde
+      Delay (1,10,mSec)
+      SerialOut (WqSerialPort,"0" + CHR(13),"?Command",3,10)
+      Delay (1,10,mSec)
+      SerialOut (WqSerialPort,"setdelim 2" + CHR(13) + CHR(10),"OK",3,50) 'set to comma delimited
+      Delay (1,300,mSec)
+      SerialIn (WqIn,WqSerialPort,100,&H0D0A,200)
+      NoSondeTrig = InStr(1,WqIn,"Sonde",2)
+      Delay (1,20,mSec)
+      SerialFlush(WqSerialPort)
+    EndSub
+
+    Sub GetWqSerial 'gets single data point from EXO
+      Call OpenWQPort
+      SerialOut (WqSerialPort,"0" + CHR(13),"?Command",3,10)
+      Delay (1,10,mSec)
+      SerialOut (WqSerialPort,"setsonde 0"+CHR(13)+CHR(10),"OK",3,50)'communicate to top sonde
+      Delay (1,10,mSec)
+      SerialOut (WqSerialPort,"0" + CHR(13),"?Command",3,10)
+      Delay (1,10,mSec)
+      SerialOut (WqSerialPort,"data" + CHR(13) + CHR(10),"",3,10)'retrieve instant YSI filtered data point
+      Delay (1,200,mSec)
+      SerialIn (WqIn,WqSerialPort,100,&H0D0A,200)
+      Erase WqData()
+      WqIn = Trim(WqIn)
+      SplitStr (WqData,WqIn,",",WqNparams,0)
+      NoSondeTrig = InStr(1,WqIn,"Sonde",2)
+      Delay (1,20,mSec)
+      SerialFlush(WqSerialPort)
+    EndSub
+
+    Sub SetEXOTime 'Subroutine to set the EXO clock to the datalogger clock to prevent drift
+      If SetEXOTimeFlag = False Then 'if we haven't reached midnight, don't set clock
+        ExitSub
+      Else 'otherwise declare local variables and set the clock
+        Dim RawSetTime = Status.Timestamp 'get latest time from datalogger
+        Dim SplitTime(6) As Float
+        Dim SendEXOHour As String
+        Dim SendEXOMin As String
+        Dim SendEXOSec As String
+        Dim CalcHour As Float
+        Dim EXOTimeString As String * 25
+        SplitStr (SplitTime(),RawSetTime," ",6,0) 'take apart the time string
+        CalcHour = SplitTime(4)
+        If DWRSonde = False Then 'If it's not a DWR sonde
+          CalcHour = CalcHour + 8 'add 8hr to datalogger timestamp to get to UTC
+        Else
+          CalcHour = CalcHour 'otherwise, leave datalogger timestamp to set to PST
+        EndIf
+        If CalcHour >= 24 Then CalcHour = CalcHour - 24
+
+        If CalcHour < 10 Then 'add leading zero to hour
+          SendEXOHour = "0" + CalcHour
+        Else
+          SendEXOHour = CalcHour
+        EndIf
+        If SplitTime(5) < 10 Then
+          SendEXOMin = "0" + SplitTime(5)
+        Else
+          SendEXOMin = SplitTime(5)
+        EndIf
+        If Round(SplitTime(6),0) < 10 Then
+          SendEXOSec = "0" + Round(SplitTime(6),0) 'eliminate fractional seconds
+        Else
+          SendEXOSec = Round(SplitTime(6),0)
+        EndIf
+        EXOTimeString = SendEXOHour + ":" + SendEXOMin + ":" + SendEXOSec 'Reconstruct UTC time string to send to EXO
+        Call OpenWQPort
+        SerialOut (WqSerialPort,"0" + CHR(13),"?Command",3,10)
+        Delay (1,10,mSec)
+        SerialOut (WqSerialPort,"setsonde 0" + CHR(13) + CHR(10),"OK",3,50)
+        Delay (1,10,mSec)
+        SerialOut (WqSerialPort,"0" + CHR(13),"?Command",3,10)
+        Delay (1,10,mSec)
+        SerialOut (WqSerialPort,"time " + EXOTimeString + CHR(13) + CHR(10),"OK",3,50)
+        Delay (1,200,mSec)
+        SerialFlush(WqSerialPort)
+      EndIf
+    EndSub
+    #If WqSonde = "WQ_SERIAL_BURST" Then
+  Sub SetBurst 'sets to run and receives string.
+    'Version 4.42 includes redundent sonde to be used with DWR, not collecting burst. This version will not allow redudent sonde to collect burst at this time. In the future copy BTM burst code for redsonde and decide what minute to sample bottom sonde in.
+    Call OpenWQPort
+    SerialOut (WqSerialPort,"0" + CHR(13),"?Command",3,10)'wake up SOA
+    Delay (1,20,mSec)
+    SerialOut (WqSerialPort,"setsonde 0" +CHR(13)+CHR(10),"OK",3,50)'communicate to top sonde
+    Delay (1,10,mSec)
+    SerialOut (WqSerialPort,"0" + CHR(13),"?Command",3,10)'wake up SOA now that it is set to the top sonde
+    Delay (1,10,mSec)
+    SerialOut (WqSerialPort,"setperiod " + BurstPeriod + CHR(13) + CHR(10),"OK",3,50)
+    Delay (1,200,msec)
+    SerialOut (WqSerialPort,"#" + CHR(13),"#" + CHR(13),3,100)
+    SerialOut (WqSerialPort,"run" + CHR(13),"run" + CHR(13),3,10) 'Starts the Wq sampling at 1Hz
+    Delay (1,1,Sec)
+  EndSub
+  
+  Sub GetBurstArray 'Gets 30 second burst from sonde and stores in burst array
+    BurstCount = 0
+    Dim Lcount As Long
+    For Lcount = 1 To MaxBurstCnt
+      SerialIn (BurstIn,WqSerialPort,100,"#",150)
+      Delay(1,50,mSec)
+      If BurstIn = "" Then
+        WqError = true
+        iCount = 1
+        Exit Sub
+      EndIf
+      BurstIn = Replace (BurstIn,"-nan","-9999")
+      SplitStr (BurstArray(iCount,1),BurstIn,CHR(32),17,0)'parse the raw string and store in burst array (process after loop)
+      Delay(1,20,mSec)
+      Erase(BurstIn)
+      SerialFlush(WqSerialPort)
+      iCount = iCount+1
+      #If WqBaud = 9600 Then
+        Delay(1,1100,mSec)'needs a little extra time at 9600 baud
+      #Else
+        Delay (1,930,mSec)
+      #EndIf
+    Next Lcount
+    Delay (1,20,mSec)
+    SerialOut (WqSerialPort,"0" + CHR(13) + CHR(10),"#",3,50)
+    SerialClose(WqSerialPort)
+  EndSub
+  #EndIf
