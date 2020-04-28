@@ -85,7 +85,7 @@ EndSub
 #If WqSonde <> "NONE" Then 'If we have a sonde
 
   'Declare Global WQ Variables
-  Public IsWQNClosed As Boolean
+  Public IsWQNClosed As Boolean = True
   Public Redeploy As Boolean
   Public WqManualCycle As Boolean
   Dim WqPwrCycleCnt As Float
