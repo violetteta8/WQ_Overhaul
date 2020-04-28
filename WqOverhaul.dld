@@ -1,5 +1,5 @@
 'Start of Constants Customization Section
-Const WqSonde = "NONE"
+Const WqSonde = "WQ_SERIAL_BURST"
 'Value = "WQ_SDI12"
 'Value = "WQ_SERIAL"
 'Value = "WQ_SERIAL_BURST"
@@ -393,7 +393,27 @@ EndSub
       Delay (1,200,mSec)
       SerialFlush(WqSerialPort)
     #ElseIf WqSonde = "WQ_SDI12" Then 'if using SDI12
-      '    BUILD SDI12 PARAMETER CHECK ROUTINE
+      Dim SDIcodes(3) As String * 50
+      Dim FullSDICodes As String * 150
+   'Use extended SDI12 command 'ZPARA!' to obtain YSI sonde parameter list into ParamCodeString. Requires
+   'a second command, simply Z!, to obtain second line of data beyond first 8-9 parameters.
+  Select Case WqSDIPort
+    Case 3
+      SDI12Recorder (SDIcodes(1),WqCom3,WqAddr,"ZPARA!",1.0,0,-1)
+      SDI12Recorder (SDIcodes(2),WqCom3,WqAddr,"Z!",1.0,0,-1) 'Obtains any parameter codes beyond first 9
+      SDI12Recorder (SDIcodes(3),WqCom3,WqAddr,"Z!",1.0,0,-1)
+    Case 5
+      SDI12Recorder (SDIcodes(1),WqCom3,WqAddr,"ZPARA!",1.0,0,-1)
+      SDI12Recorder (SDIcodes(2),WqCom3,WqAddr,"Z!",1.0,0,-1) 'Obtains any parameter codes beyond first 9
+      SDI12Recorder (SDIcodes(3),WqCom3,WqAddr,"Z!",1.0,0,-1)
+    EndSelect
+  SplitStr (SDIcodes(1),SDIcodes(1),"^M^J",1,6)
+  SplitStr (SDIcodes(2),SDIcodes(2),"^M^J",1,7)
+  SplitStr (SDIcodes(3),SDIcodes(3),"^M^J",1,7)
+  SDIcodes(2) = Mid(SDIcodes(2),2,50)
+  SDIcodes(3) = Mid(SDIcodes(3),2,50)
+  FullSDICodes = SDIcodes(1) + SDIcodes(2) + SDIcodes(3)
+  SplitStr (WqParamOrder(),FullSDICodes,"_",WqNParams,0)
     #EndIf 'End Serial or SDI12 conditional
   EndSub 'Parameter Check
 
