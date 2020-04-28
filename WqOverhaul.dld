@@ -11,6 +11,10 @@ Const MaxBurstCnt = 30
 'Min = 4
 'Max = 30
 'Inc = 1
+Const MaxWqErrCnt = 20
+'Min = 5
+'Max = 60
+'Inc = 5
 Const DWRSonde = False
 'Value = True
 'Value = False
@@ -57,9 +61,9 @@ Alias rTime(8) = DOW 'Day of Week
 
 Dim Rec15MinFlag As Boolean 'AQ Table Trigger
 #If WqSonde = "WQ_SERIAL_BURST" Then
-    Dim BurstMissed As Boolean
-    Dim RecBurstFlag As Boolean
-    Dim BurstPeriod 'Do we want this Public in the future?
+  Dim BurstMissed As Boolean
+  Dim RecBurstFlag As Boolean
+  Dim BurstPeriod 'Do we want this Public in the future?
 #EndIf
 
 'Mod Timing used to trigger time-based events, tables, sampling using scan rate interval
@@ -72,6 +76,8 @@ Sub ModTiming
   ModDay = RealSeconds MOD 86400 'calculate period into a 24hr period
   If Mod15Minutes = 0 Then
     Rec15MinFlag = True
+  Else
+    Rec15MinFlag = False
   EndIf
 EndSub
 
@@ -118,8 +124,8 @@ EndSub
       Dim IsWqMax232 As Boolean 'Only using Max232 for CR1000s currently
     #EndIf
     #If LoggerType = CR6 Then
-    Dim UseCommsOneForSonde As Boolean
-    Dim UseCommsZeroForSonde As Boolean
+      Dim UseCommsOneForSonde As Boolean
+      Dim UseCommsZeroForSonde As Boolean
     #EndIf
   #ElseIf WqSonde = "WQ_SDI12" Then 'If sonde uses SDI12 comms
     Public WqSDIPort 'Port for Wq Sonde
@@ -127,53 +133,53 @@ EndSub
   #EndIf 'Serial or SDI12 conditional
 #EndIf
 
-  'Table Definitions
-  DataTable(Aquarius,Rec15MinFlag,-1)
-    CardOut(0,17280)
-    OpenInterval
-    Minimum (1,StationVolts,FP2,False,False)
-    Average (1,LoggerTempC,FP2,False)
-    #If WqSonde = "WQ_SERIAL_BURST" Then
-      Sample (1,MedBurstDate,IEEE4)
-      Sample (1,MedBurstTime,IEEE4)
-      Minimum (1,WqBattV,FP2,False,False)
-      Sample (1,MedTempC,IEEE4) 'the "Med..." values are pulled from the burst table via "Med... = Burst.BurstMed..."
-      Sample (1,MedSpCond,IEEE4)
-      Sample (1,MedTurbFNU,IEEE4)
-      Sample (1,MedDOsat,IEEE4)
-      Sample (1,MedDOmgL,IEEE4)
-      Sample (1,MedDepthFt,IEEE4)
-      Sample (1,MedBattV,FP2)
-      Sample (1,MedpH,IEEE4)
-      Sample (1,MedChlugL,IEEE4)
-      Sample (1,MedChlRFU,IEEE4)
-      Sample (1,MedFdomRFU,IEEE4)
-      Sample (1,MedFdomQSU,IEEE4)
-      Sample (1,MedBGArfu,IEEE4)
-      Sample (1,MedBGAugL,IEEE4)
-    #ElseIf WqSonde = "WQ_SERIAL" OR WqSonde = "WQ_SDI12" Then
-      Sample (1,WqDate,IEEE4)
-      Sample (1,WqTime,IEEE4)
-      Minimum (1,WqBattV,FP2,False,False)
-      Sample (1,WqTempC,IEEE4)
-      Sample (1,WqSpCond,IEEE4)
-      Sample (1,WqTurbFNU,IEEE4)
-      Sample (1,WqDOsat,IEEE4)
-      Sample (1,WqDOmgL,IEEE4)
-      Sample (1,WqDepthFt,IEEE4)
-      Sample (1,WqDepthM,IEEE4)
-      Sample (1,WqBattV,IEEE4)
-      Sample (1,WqpH,IEEE4)
-      Sample (1,WqChlugL,IEEE4)
-      Sample (1,WqChlRFU,IEEE4)
-      Sample (1,WqFdomRFU,IEEE4)
-      Sample (1,WqFdomQSU,IEEE4)
-    #EndIf
-  EndTable
+'Table Definitions
+DataTable(Aquarius,Rec15MinFlag,-1)
+  CardOut(0,17280)
+  OpenInterval
+  Minimum (1,StationVolts,FP2,False,False)
+  Average (1,LoggerTempC,FP2,False)
+  #If WqSonde = "WQ_SERIAL_BURST" Then
+    Sample (1,MedBurstDate,IEEE4)
+    Sample (1,MedBurstTime,IEEE4)
+    Minimum (1,WqBattV,FP2,False,False)
+    Sample (1,MedTempC,IEEE4) 'the "Med..." values are pulled from the burst table via "Med... = Burst.BurstMed..."
+    Sample (1,MedSpCond,IEEE4)
+    Sample (1,MedTurbFNU,IEEE4)
+    Sample (1,MedDOsat,IEEE4)
+    Sample (1,MedDOmgL,IEEE4)
+    Sample (1,MedDepthFt,IEEE4)
+    Sample (1,MedBattV,FP2)
+    Sample (1,MedpH,IEEE4)
+    Sample (1,MedChlugL,IEEE4)
+    Sample (1,MedChlRFU,IEEE4)
+    Sample (1,MedFdomRFU,IEEE4)
+    Sample (1,MedFdomQSU,IEEE4)
+    Sample (1,MedBGArfu,IEEE4)
+    Sample (1,MedBGAugL,IEEE4)
+  #ElseIf WqSonde = "WQ_SERIAL" OR WqSonde = "WQ_SDI12" Then
+    Sample (1,WqDate,IEEE4)
+    Sample (1,WqTime,IEEE4)
+    Minimum (1,WqBattV,FP2,False,False)
+    Sample (1,WqTempC,IEEE4)
+    Sample (1,WqSpCond,IEEE4)
+    Sample (1,WqTurbFNU,IEEE4)
+    Sample (1,WqDOsat,IEEE4)
+    Sample (1,WqDOmgL,IEEE4)
+    Sample (1,WqDepthFt,IEEE4)
+    Sample (1,WqDepthM,IEEE4)
+    Sample (1,WqBattV,IEEE4)
+    Sample (1,WqpH,IEEE4)
+    Sample (1,WqChlugL,IEEE4)
+    Sample (1,WqChlRFU,IEEE4)
+    Sample (1,WqFdomRFU,IEEE4)
+    Sample (1,WqFdomQSU,IEEE4)
+  #EndIf
+EndTable
 
 #If WqSonde <> "NONE" Then 'If we have a sonde
   #If WqSonde = "WQ_SERIAL_BURST" Then
-    DataTable(Burst,RecBurstFlag,17280)
+    DataTable(Burst,RecBurstFlag,1600)
       CardOut (0,17280)
       OpenInterval
       Sample (1,SiteID,String)
@@ -273,7 +279,7 @@ EndSub
       Sample (1,BurstErrCnt,FP2)
     EndTable
 
-    DataTable(SecBurst,True,350000)
+    DataTable(SecBurst,True,900)
       CardOut (0,350000)
       OpenInterval
       Sample (1,SiteID,String)
@@ -308,6 +314,32 @@ EndSub
     EndTable
   #EndIf
 
+  DataTable (SVMaq,True,-1)
+    Sample (1,WqDate,IEEE4)
+    Sample (1,WqTime,IEEE4)
+    Sample (1,WqTempC,FP2)
+    Sample (1,WqTempF,FP2)
+    Sample (1,WqSpCond,IEEE4)
+    Sample (1,WqTurbFNU,IEEE4)
+    Sample (1,WqDOsat,IEEE4)
+    Sample (1,WqDOmgL,IEEE4)
+    Sample (1,WqDepthFt,FP2)
+    Sample (1,WqDepthM,FP2)
+    Sample (1,WqBattV,FP2)
+    Sample (1,WqpH,FP2)
+    Sample (1,WqpHmV,IEEE4)
+    Sample (1,WqORP,IEEE4)
+    Sample (1,WqChlugL,IEEE4)
+    Sample (1,WqChlRFU,IEEE4)
+    Sample (1,WqBGArfu,IEEE4)
+    Sample (1,WqBGAugL,IEEE4)
+    Sample (1,WqFdomRFU,IEEE4)
+    Sample (1,WqFdomQSU,IEEE4)
+    Sample (1,WqNH4mgL,IEEE4)
+    Sample (1,WqNO3mgL,IEEE4)
+    Sample (1,WqCLmgL,IEEE4)
+    Sample (1,WqWiperPos,FP2)
+  EndTable
 
   'Start WQ Subroutine Section
 
@@ -395,25 +427,25 @@ EndSub
     #ElseIf WqSonde = "WQ_SDI12" Then 'if using SDI12
       Dim SDIcodes(3) As String * 50
       Dim FullSDICodes As String * 150
-   'Use extended SDI12 command 'ZPARA!' to obtain YSI sonde parameter list into ParamCodeString. Requires
-   'a second command, simply Z!, to obtain second line of data beyond first 8-9 parameters.
-  Select Case WqSDIPort
-    Case 3
-      SDI12Recorder (SDIcodes(1),WqCom3,WqAddr,"ZPARA!",1.0,0,-1)
-      SDI12Recorder (SDIcodes(2),WqCom3,WqAddr,"Z!",1.0,0,-1) 'Obtains any parameter codes beyond first 9
-      SDI12Recorder (SDIcodes(3),WqCom3,WqAddr,"Z!",1.0,0,-1)
-    Case 5
-      SDI12Recorder (SDIcodes(1),WqCom3,WqAddr,"ZPARA!",1.0,0,-1)
-      SDI12Recorder (SDIcodes(2),WqCom3,WqAddr,"Z!",1.0,0,-1) 'Obtains any parameter codes beyond first 9
-      SDI12Recorder (SDIcodes(3),WqCom3,WqAddr,"Z!",1.0,0,-1)
-    EndSelect
-  SplitStr (SDIcodes(1),SDIcodes(1),"^M^J",1,6)
-  SplitStr (SDIcodes(2),SDIcodes(2),"^M^J",1,7)
-  SplitStr (SDIcodes(3),SDIcodes(3),"^M^J",1,7)
-  SDIcodes(2) = Mid(SDIcodes(2),2,50)
-  SDIcodes(3) = Mid(SDIcodes(3),2,50)
-  FullSDICodes = SDIcodes(1) + SDIcodes(2) + SDIcodes(3)
-  SplitStr (WqParamOrder(),FullSDICodes,"_",WqNParams,0)
+      'Use extended SDI12 command 'ZPARA!' to obtain YSI sonde parameter list into ParamCodeString. Requires
+      'a second command, simply Z!, to obtain second line of data beyond first 8-9 parameters.
+      Select Case WqSDIPort
+      Case 3
+        SDI12Recorder (SDIcodes(1),WqCom3,WqAddr,"ZPARA!",1.0,0,-1)
+        SDI12Recorder (SDIcodes(2),WqCom3,WqAddr,"Z!",1.0,0,-1) 'Obtains any parameter codes beyond first 9
+        SDI12Recorder (SDIcodes(3),WqCom3,WqAddr,"Z!",1.0,0,-1)
+      Case 5
+        SDI12Recorder (SDIcodes(1),WqCom3,WqAddr,"ZPARA!",1.0,0,-1)
+        SDI12Recorder (SDIcodes(2),WqCom3,WqAddr,"Z!",1.0,0,-1) 'Obtains any parameter codes beyond first 9
+        SDI12Recorder (SDIcodes(3),WqCom3,WqAddr,"Z!",1.0,0,-1)
+      EndSelect
+      SplitStr (SDIcodes(1),SDIcodes(1),"^M^J",1,6)
+      SplitStr (SDIcodes(2),SDIcodes(2),"^M^J",1,7)
+      SplitStr (SDIcodes(3),SDIcodes(3),"^M^J",1,7)
+      SDIcodes(2) = Mid(SDIcodes(2),2,50)
+      SDIcodes(3) = Mid(SDIcodes(3),2,50)
+      FullSDICodes = SDIcodes(1) + SDIcodes(2) + SDIcodes(3)
+      SplitStr (WqParamOrder(),FullSDICodes,"_",WqNParams,0)
     #EndIf 'End Serial or SDI12 conditional
   EndSub 'Parameter Check
 
@@ -539,35 +571,35 @@ EndSub
     If WqLocCL > 0 Then WqCLmgL = WqData(WqLocCL)
     If WqLocWiperPos > 0 Then WqWiperPos = WqData(WqLocWiperPos)
   EndSub 'Parse data
-  
-#If DWRSonde = False Then 'Don't mark data bad when DWR uses sample and hold
-  Sub MarkWQBad 'if WQerror then NAN all wqdata
-    WqDate = ""
-    WqTime = ""
-    WqTempC = BadDataIndicator
-    WqTempF = BadDataIndicator
-    WqSpCond = BadDataIndicator
-    WqTurbFNU = BadDataIndicator
-    WqChlugL = BadDataIndicator
-    WqChlRFU = BadDataIndicator
-    WqDOmgL = BadDataIndicator
-    WqDOsat = BadDataIndicator
-    WqpH = BadDataIndicator
-    WqpHmV = BadDataIndicator
-    WqORP = BadDataIndicator
-    WqDepthFt = BadDataIndicator
-    WqDepthM = BadDataIndicator
-    WqBattV = BadDataIndicator
-    WqBGAugL = BadDataIndicator
-    WqBGArfu = BadDataIndicator
-    WqFdomRFU = BadDataIndicator
-    WqFdomQSU = BadDataIndicator
-    WqNH4mgL = BadDataIndicator
-    WqNO3mgL = BadDataIndicator
-    WqCLmgL = BadDataIndicator
-    WqWiperPos = BadDataIndicator
-  EndSub 'Mark data bad
-#EndIf
+
+  #If DWRSonde = False Then 'Don't mark data bad when DWR uses sample and hold
+    Sub MarkWQBad 'if WQerror then NAN all wqdata
+      WqDate = ""
+      WqTime = ""
+      WqTempC = BadDataIndicator
+      WqTempF = BadDataIndicator
+      WqSpCond = BadDataIndicator
+      WqTurbFNU = BadDataIndicator
+      WqChlugL = BadDataIndicator
+      WqChlRFU = BadDataIndicator
+      WqDOmgL = BadDataIndicator
+      WqDOsat = BadDataIndicator
+      WqpH = BadDataIndicator
+      WqpHmV = BadDataIndicator
+      WqORP = BadDataIndicator
+      WqDepthFt = BadDataIndicator
+      WqDepthM = BadDataIndicator
+      WqBattV = BadDataIndicator
+      WqBGAugL = BadDataIndicator
+      WqBGArfu = BadDataIndicator
+      WqFdomRFU = BadDataIndicator
+      WqFdomQSU = BadDataIndicator
+      WqNH4mgL = BadDataIndicator
+      WqNO3mgL = BadDataIndicator
+      WqCLmgL = BadDataIndicator
+      WqWiperPos = BadDataIndicator
+    EndSub 'Mark data bad
+  #EndIf
 
   #If WqSonde = "WQ_SERIAL" OR WqSonde = "WQ_SERIAL_BURST" Then 'If serial communications
     Sub SetDelim 'sets the EXO to comma delimited output
@@ -654,251 +686,253 @@ EndSub
       SerialFlush(WqSerialPort)
     EndSub 'clock set
 
-  #If WqSonde = "WQ_SERIAL_BURST" Then 'If burst only
-    'Define Burst related variables
-    Dim GetBurst As Boolean
-    Dim StartBurstTimer 'Timer name
-    Dim BurstDelay 'Length of time to delay sampling into given minute
-    Dim BurstData(WqNParams)
-    Dim BurstArray(MaxBurstCnt,WqNParams)
-    Dim BurstCount, BurstErrCnt, TotalBurstVals, BurstMaxErrCnt = 3, MinBurstVals = 4
-    Dim StartBurst As Boolean
+    #If WqSonde = "WQ_SERIAL_BURST" Then 'If burst only
+      'Define Burst related variables
+      Dim GetBurst As Boolean
+      Dim StartBurstTimer 'Timer name
+      Dim BurstDelay 'Length of time to delay sampling into given minute
+      Dim BurstData(WqNParams)
+      Dim BurstArray(MaxBurstCnt,WqNParams)
+      Dim BurstCount, BurstErrCnt, TotalBurstVals, BurstMaxErrCnt = 3, MinBurstVals = 4
+      Dim StartBurst As Boolean
 
-    'Declare Variables to store parsed burst data
-    Dim BurstDate, BurstTime, BurstTempC, BurstTempF, BurstSpCond, BurstTurbFNU, BurstDOsat, BurstDOmgL, BurstDepthFt, BurstDepthM
-    Dim BurstBattV, BurstORP, BurstpH, BurstpHmV, BurstChlugL, BurstChlRFU, BurstBGArfu, BurstBGAugL, BurstFdomRFU, BurstFdomQSU, BurstNH4mgL
-    Dim BurstNO3mgL, BurstCLmgL, BurstWiperPos
+      'Declare Variables to store parsed burst data
+      Dim BurstDate, BurstTime, BurstTempC, BurstTempF, BurstSpCond, BurstTurbFNU, BurstDOsat, BurstDOmgL, BurstDepthFt, BurstDepthM
+      Dim BurstBattV, BurstORP, BurstpH, BurstpHmV, BurstChlugL, BurstChlRFU, BurstBGArfu, BurstBGAugL, BurstFdomRFU, BurstFdomQSU, BurstNH4mgL
+      Dim BurstNO3mgL, BurstCLmgL, BurstWiperPos
 
-    'Declare "Median" Variables to be pulled from Burst Table and Stored/Output in AQ Table
-    Dim MedBurstDate, MedBurstTime, MedTempC, MedTempF, MedSpCond, MedTurbFNU, MedDOsat, MedDOmgL, MedDepthFt, MedDepthM, MedBattV
-    Dim MedORP, MedpH, MedpHmV, MedChlugL, MedChlRFU, MedBGArfu, MedBGAugL, MedFdomRFU, MedFdomQSU, MedNH4mgL
-    Dim MedNO3mgL, MedCLmgL, MedWiperPos
+      'Declare "Median" Variables to be pulled from Burst Table and Stored/Output in AQ Table
+      Dim MedBurstDate, MedBurstTime, MedTempC, MedTempF, MedSpCond, MedTurbFNU, MedDOsat, MedDOmgL, MedDepthFt, MedDepthM, MedBattV
+      Dim MedORP, MedpH, MedpHmV, MedChlugL, MedChlRFU, MedBGArfu, MedBGAugL, MedFdomRFU, MedFdomQSU, MedNH4mgL
+      Dim MedNO3mgL, MedCLmgL, MedWiperPos
 
-    Sub BurstStartTimer
-      GetBurst = False
-      If Mod15Minutes <> 840 Then ExitSub 'if the 14th minute
-      Timer (StartBurstTimer,mSec,2) 'start timer for delaying the burst to later in the minute
-      GetBurst = True
-    EndSub
+      Sub BurstStartTimer
+        GetBurst = False
+        If Mod15Minutes <> 840 Then ExitSub 'if the 14th minute
+        Timer (StartBurstTimer,mSec,2) 'start timer for delaying the burst to later in the minute
+        GetBurst = True
+      EndSub
 
-    Sub BurstDelayLoop
-      #If LoggerType = CR6 Then
-        Dim BurstDelayCnt = 8
-      #ElseIf LoggerType = CR1000 Then
-        Dim BurstDelayCnt = 30
-      #EndIf
-      StartBurst = False
-      If GetBurst = False Then ExitSub
-      Do
-        BurstDelay = Timer(StartBurstTimer,mSec,4)
-        BurstDelay = BurstDelay/1000
-        If BurstDelay >= 60 - (MaxBurstCnt + BurstDelayCnt) Then 'delay until there will be a few seconds to spare at end of scan (sample rate is 1.15sec * 30 = 34.5seconds to complete)
-          StartBurst = True
-          ExitDo 'we reached out time threshold, start burst
-        EndIf
-        Delay(1,250,mSec) 'delay 0.25sec before checking time again
-      Loop
-    EndSub
-
-    Sub SetBurst 'sets to run and receives string.
-      If StartBurst = False OR Redeploy = True Then ExitSub
-      If BurstPeriod = 0 Then
-        BurstPeriod = 1150 'this is adjustable here and in the public table. Minimum value is 250 for the sonde. A cr6 seems to work at that rate or slower. A CR1000 needs a rate of no faster than 1150.
-      ElseIf BurstPeriod < 250 Then 'if user enters values less than 250, but not 0, bring it up to 250. This is the max rate that the sonde can collect.
-        BurstPeriod = 250
-      EndIf
-      Call OpenWQPort
-      SerialOut (WqSerialPort,"0" + CHR(13),"?Command",3,10)'wake up SOA
-      Delay (1,20,mSec)
-      SerialOut (WqSerialPort,"setsonde 0" +CHR(13)+CHR(10),"OK",3,50)'communicate to top sonde
-      Delay (1,10,mSec)
-      SerialOut (WqSerialPort,"0" + CHR(13),"?Command",3,10)'wake up SOA now that it is set to the top sonde
-      Delay (1,10,mSec)
-      SerialOut (WqSerialPort,"setperiod " + BurstPeriod + CHR(13) + CHR(10),"OK",3,50)
-      Delay (1,200,msec)
-      SerialOut (WqSerialPort,"#" + CHR(13),"#" + CHR(13),3,100)
-      SerialOut (WqSerialPort,"run" + CHR(13),"run" + CHR(13),3,10) 'Starts the Wq sampling at 1Hz
-      Delay (1,1,Sec)
-    EndSub 'set burst period
-
-    Sub BuildBurstArray 'Gets 30 second burst from sonde and stores in burst array
-      Dim BurstIn As String * 256 'Raw EXO burst data string
-      Dim Lcount As Long
-      If StartBurst = False OR Redeploy = True Then ExitSub
-      BurstCount = 0
-      Erase BurstIn
-      Erase BurstArray()
-      For Lcount = 1 To MaxBurstCnt
-        SerialIn (BurstIn,WqSerialPort,100,"#",150)
-        Delay(1,50,mSec)
-        If BurstIn = "" Then
-          WqError = True
-          ExitSub
-        EndIf
-        BurstIn = Replace (BurstIn,"-nan","-9999")
-        SplitStr (BurstArray(Lcount,1),BurstIn,CHR(32),17,0)'parse the raw string and store in burst array (process after loop)
-        Delay(1,20,mSec)
-        Erase(BurstIn)
-        SerialFlush(WqSerialPort)
-        #If WqBaud = 9600 Then
-          Delay(1,1100,mSec)'needs a little extra time at 9600 baud
-        #ElseIf WqBaud = 38400
-          Delay (1,930,mSec)
+      Sub BurstDelayLoop
+        #If LoggerType = CR6 Then
+          Dim BurstDelayCnt = 8
+        #ElseIf LoggerType = CR1000 Then
+          Dim BurstDelayCnt = 30
         #EndIf
-        If Lcount >= MaxBurstCnt Then ExitSub
-      Next Lcount
-      Delay (1,20,mSec)
-      SerialOut (WqSerialPort,"0" + CHR(13) + CHR(10),"#",3,50)
-      SerialClose(WqSerialPort)
-    EndSub 'fill BurstArray
+        StartBurst = False
+        If GetBurst = False Then ExitSub
+        Do
+          BurstDelay = Timer(StartBurstTimer,mSec,4)
+          BurstDelay = BurstDelay/1000
+          If BurstDelay >= 60 - (MaxBurstCnt + BurstDelayCnt) Then 'delay until there will be a few seconds to spare at end of scan (sample rate is 1.15sec * 30 = 34.5seconds to complete)
+            StartBurst = True
+            ExitDo 'we reached out time threshold, start burst
+          EndIf
+          Delay(1,250,mSec) 'delay 0.25sec before checking time again
+        Loop
+      EndSub
 
-    Sub DeconBurstArray
-      Dim jCount
-      Dim kCount
-      If StartBurst = False OR Redeploy = True Then ExitSub
-      BurstCount = 0 'reset our burst counter
-      TotalBurstVals = 0 'reset variable that will store how many values used to calculate burst table
-      BurstErrCnt = 0 'reset error counter
-      jCount = 0 'reset j Loop counter
-      kCount = 0 'reset k Loop counter
-      For jCount = 1 To MaxBurstCnt 'de-construct BurstArray and send to table.  too slow to do in get loop
-        For kCount = 1 To WqNParams 'this is the loop to pull the parameters
-          BurstData(kCount) = BurstArray(jCount,kCount)' get one burst string
-        Next kCount 'pull all parameters within the k-th part of the j-loop and store in the array
-        Call ParseBurst 'parse array into proper fields
-        If WqError Then 'if we didn't get data
-          BurstErrCnt = BurstErrCnt + 1
+      Sub SetBurst 'sets to run and receives string.
+        If StartBurst = False OR Redeploy = True Then ExitSub
+        If BurstPeriod = 0 Then
+          BurstPeriod = 1150 'this is adjustable here and in the public table. Minimum value is 250 for the sonde. A cr6 seems to work at that rate or slower. A CR1000 needs a rate of no faster than 1150.
+        ElseIf BurstPeriod < 250 Then 'if user enters values less than 250, but not 0, bring it up to 250. This is the max rate that the sonde can collect.
+          BurstPeriod = 250
         EndIf
-        BurstCount = BurstCount+1 'burst count increase
-        If BurstErrCnt > BurstMaxErrCnt Then 'if we have more errors than the threshold
-          TotalBurstVals = jCount - BurstErrCnt 'the total number of values used for the burst should be jCount - number of errors
-          SerialOut (WqSerialPort,"0" + CHR(13) + CHR(10),"#",3,50) 'send a "0" out to stop the SOA from attempting to burst
-          ExitFor 'if error occurs more than a threshold, exit the loop
+        Call OpenWQPort
+        SerialOut (WqSerialPort,"0" + CHR(13),"?Command",3,10)'wake up SOA
+        Delay (1,20,mSec)
+        SerialOut (WqSerialPort,"setsonde 0" +CHR(13)+CHR(10),"OK",3,50)'communicate to top sonde
+        Delay (1,10,mSec)
+        SerialOut (WqSerialPort,"0" + CHR(13),"?Command",3,10)'wake up SOA now that it is set to the top sonde
+        Delay (1,10,mSec)
+        SerialOut (WqSerialPort,"setperiod " + BurstPeriod + CHR(13) + CHR(10),"OK",3,50)
+        Delay (1,200,msec)
+        SerialOut (WqSerialPort,"#" + CHR(13),"#" + CHR(13),3,100)
+        SerialOut (WqSerialPort,"run" + CHR(13),"run" + CHR(13),3,10) 'Starts the Wq sampling at 1Hz
+        Delay (1,1,Sec)
+      EndSub 'set burst period
+
+      Sub BuildBurstArray 'Gets 30 second burst from sonde and stores in burst array
+        Dim BurstIn As String * 256 'Raw EXO burst data string
+        Dim Lcount As Long
+        If StartBurst = False OR Redeploy = True Then ExitSub
+        BurstCount = 0
+        Erase BurstIn
+        Erase BurstArray()
+        For Lcount = 1 To MaxBurstCnt
+          SerialIn (BurstIn,WqSerialPort,100,"#",150)
+          Delay(1,50,mSec)
+          If BurstIn = "" Then
+            WqError = True
+            ExitSub
+          EndIf
+          BurstIn = Replace (BurstIn,"-nan","-9999")
+          SplitStr (BurstArray(Lcount,1),BurstIn,CHR(32),17,0)'parse the raw string and store in burst array (process after loop)
+          Delay(1,20,mSec)
+          Erase(BurstIn)
+          SerialFlush(WqSerialPort)
+          #If WqBaud = 9600 Then
+            Delay(1,1100,mSec)'needs a little extra time at 9600 baud
+          #ElseIf WqBaud = 38400
+            Delay (1,930,mSec)
+          #EndIf
+          If Lcount >= MaxBurstCnt Then ExitSub
+        Next Lcount
+        Delay (1,20,mSec)
+        SerialOut (WqSerialPort,"0" + CHR(13) + CHR(10),"#",3,50)
+        SerialClose(WqSerialPort)
+      EndSub 'fill BurstArray
+
+      Sub DeconBurstArray
+        Dim jCount
+        Dim kCount
+        If StartBurst = False OR Redeploy = True Then ExitSub
+        BurstCount = 0 'reset our burst counter
+        TotalBurstVals = 0 'reset variable that will store how many values used to calculate burst table
+        BurstErrCnt = 0 'reset error counter
+        jCount = 0 'reset j Loop counter
+        kCount = 0 'reset k Loop counter
+        For jCount = 1 To MaxBurstCnt 'de-construct BurstArray and send to table.  too slow to do in get loop
+          For kCount = 1 To WqNParams 'this is the loop to pull the parameters
+            BurstData(kCount) = BurstArray(jCount,kCount)' get one burst string
+          Next kCount 'pull all parameters within the k-th part of the j-loop and store in the array
+          Call ParseBurst 'parse array into proper fields
+          If WqError Then 'if we didn't get data
+            BurstErrCnt = BurstErrCnt + 1
+          EndIf
+          BurstCount = BurstCount+1 'burst count increase
+          If BurstErrCnt > BurstMaxErrCnt Then 'if we have more errors than the threshold
+            TotalBurstVals = jCount - BurstErrCnt 'the total number of values used for the burst should be jCount - number of errors
+            SerialOut (WqSerialPort,"0" + CHR(13) + CHR(10),"#",3,50) 'send a "0" out to stop the SOA from attempting to burst
+            ExitFor 'if error occurs more than a threshold, exit the loop
+          EndIf
+          If BurstCount >= MaxBurstCnt Then 'if our burst count has reached our threshold
+            TotalBurstVals = jCount - BurstErrCnt 'if there's an interuption during the burst but it comes back online, we need to subtract how many times error happened to calculate a total number of values
+            BurstMissed = False 'we had good values coming in, so Make sure disable variable is set to false so the values get processed
+            RecBurstFlag = True 'set our output flag to true
+            CallTable SecBurst 'call the table that stores individual 1sec values
+            CallTable Burst 'call the burst table
+          ElseIf BurstCount < MaxBurstCnt AND WqError = True Then
+            BurstMissed = False 'we have good values
+            RecBurstFlag = False 'don't set the output flag because we haven't reached our threshold
+            CallTable SecBurst 'store the next 1sec value
+          ElseIf BurstCount < MaxBurstCnt AND WqError = False Then
+            BurstMissed = False
+            RecBurstFlag = False
+            CallTable SecBurst
+            CallTable Burst 'Need to call table to store the values in the table memory until the output flag (RecBurstFlag) is true
+          EndIf
+          Delay(1,1,msec)
+        Next jCount 'restart the loop until we reach max burst count
+        If BurstCount < MaxBurstCnt Then 'didn't reach our burst threshold, so let's Call and output SecBurst and Burst Tables
+          BurstMissed = True 'Disable processing of Median values in burst table
+          RecBurstFlag = True 'set the output flag to true
+          CallTable SecBurst 'store the final value in the SecBurst table
+          CallTable Burst 'Call the burst table to output median values no with however many 1sec values were collected
         EndIf
-        If BurstCount >= MaxBurstCnt Then 'if our burst count has reached our threshold
-          TotalBurstVals = jCount - BurstErrCnt 'if there's an interuption during the burst but it comes back online, we need to subtract how many times error happened to calculate a total number of values
-          BurstMissed = False 'we had good values coming in, so Make sure disable variable is set to false so the values get processed
-          RecBurstFlag = True 'set our output flag to true
-          CallTable SecBurst 'call the table that stores individual 1sec values
-          CallTable Burst 'call the burst table
-        ElseIf BurstCount < MaxBurstCnt AND WqError = True Then
-          BurstMissed = False 'we have good values
-          RecBurstFlag = False 'don't set the output flag because we haven't reached our threshold
-          CallTable SecBurst 'store the next 1sec value
-        ElseIf BurstCount < MaxBurstCnt AND WqError = False Then
-          BurstMissed = False
-          RecBurstFlag = False
-          CallTable SecBurst
-          CallTable Burst 'Need to call table to store the values in the table memory until the output flag (RecBurstFlag) is true
+        If TotalBurstVals >= MinBurstVals Then 'if we reached our minimum threshold for 1sec values
+          Call CopyMedBurstVals 'copy the values from the burst table to the "Med..." values to be sampled into the AQ table
+        Else
+          Call ResetBurstVars 'we didn't reach our minimum threshold, NAN all values to be sampled into AQ table
         EndIf
-        Delay(1,1,msec)
-      Next jCount 'restart the loop until we reach max burst count
-      If BurstCount < MaxBurstCnt Then 'didn't reach our burst threshold, so let's Call and output SecBurst and Burst Tables
-        BurstMissed = True 'Disable processing of Median values in burst table
-        RecBurstFlag = True 'set the output flag to true
-        CallTable SecBurst 'store the final value in the SecBurst table
-        CallTable Burst 'Call the burst table to output median values no with however many 1sec values were collected
-      EndIf
-      If TotalBurstVals >= MinBurstVals Then 'if we reached our minimum threshold for 1sec values
-        Call CopyMedBurstVals 'copy the values from the burst table to the "Med..." values to be sampled into the AQ table
-      Else
-        Call ResetBurstVars 'we didn't reach our minimum threshold, NAN all values to be sampled into AQ table
-      EndIf
-      SerialFlush (WqSerialPort) 'flush the port to ensure nothing gets inadvertantly populated
-      BurstCount = 0 'reset our burst count back to 0
-    EndSub
+        SerialFlush (WqSerialPort) 'flush the port to ensure nothing gets inadvertantly populated
+        BurstCount = 0 'reset our burst count back to 0
+      EndSub
 
-    Sub ParseBurst 'Parses burst data into correct locations
-      If BurstData(WqLocDate) <> NAN AND BurstData(WqLocDate) <> 0 Then
-        WqError = False
-        WqDead = False
-        WqErrCount = 0
-        WqPwrCycleCnt = 0
-      Else
-        WqError = True
-      EndIf
-      If WqLocDate > 0 Then BurstDate = BurstData(WqLocDate)
-      If WqLocTime > 0 Then BurstTime = BurstData(WqLocTime)
-      If WqLocTempC > 0 Then BurstTempC = BurstData(WqLocTempC)
-      If WqLocTempF > 0 Then BurstTempF = BurstData(WqLocTempF)
-      If WqLocSpC > 0 Then BurstSpCond = BurstData(WqLocSpC)
-      If WqLocTurbFNU > 0 Then BurstTurbFNU = BurstData(WqLocTurbFNU)
-      If WqLocDOSat > 0 Then BurstDOsat = BurstData(WqLocDOSat)
-      If WqLocDOmgL > 0 Then BurstDOmgL = BurstData(WqLocDOmgL)
-      If WqLocDepthFt > 0 Then BurstDepthFt = BurstData(WqLocDepthFt)
-      If WqLocDepthM > 0 Then BurstDepthM = BurstData(WqLocDepthM)
-      If WqLocBatt > 0 Then BurstBattV = BurstData(WqLocBatt)
-      If WqLocpH > 0 Then BurstpH = BurstData(WqLocpH)
-      If WqLocpHmV > 0 Then BurstpHmV = BurstData(WqLocpHmV)
-      If WqLocORP > 0 Then BurstORP = BurstData(WqLocORP)
-      If WqLocChlugL > 0 Then BurstChlugL = BurstData(WqLocChlugL)
-      If WqLocChlRFU > 0 Then BurstChlRFU = BurstData(WqLocChlRFU)
-      If WqLocBGApcRFU > 0 Then BurstBGArfu = BurstData(WqLocBGApcRFU)
-      If WqLocBGApcugL > 0 Then BurstBGAugL = BurstData(WqLocBGApcugL)
-      If WqLocFdomRFU > 0 Then BurstFdomRFU = BurstData(WqLocFdomRFU)
-      If WqLocFdomQSU > 0 Then BurstFdomQSU = BurstData(WqLocFdomQSU)
-      If WqLocNH4 > 0 Then BurstNH4mgL = BurstData(WqLocNH4)
-      If WqLocNO3 > 0 Then BurstNO3mgL = BurstData(WqLocNO3)
-      If WqLocCL > 0 Then BurstCLmgL = BurstData(WqLocCL)
-      If WqLocWiperPos > 0 Then BurstWiperPos = BurstData(WqLocWiperPos)
-    EndSub 'Parse burst
+      Sub ParseBurst 'Parses burst data into correct locations
+        If BurstData(WqLocDate) <> NAN AND BurstData(WqLocDate) <> 0 Then
+          WqError = False
+          WqDead = False
+          WqErrCount = 0
+          WqPwrCycleCnt = 0
+        Else
+          WqError = True
+          WqErrCount = WqErrCount + 1
+          WqPwrCycleCnt = WqPwrCycleCnt + 1
+        EndIf
+        If WqLocDate > 0 Then BurstDate = BurstData(WqLocDate)
+        If WqLocTime > 0 Then BurstTime = BurstData(WqLocTime)
+        If WqLocTempC > 0 Then BurstTempC = BurstData(WqLocTempC)
+        If WqLocTempF > 0 Then BurstTempF = BurstData(WqLocTempF)
+        If WqLocSpC > 0 Then BurstSpCond = BurstData(WqLocSpC)
+        If WqLocTurbFNU > 0 Then BurstTurbFNU = BurstData(WqLocTurbFNU)
+        If WqLocDOSat > 0 Then BurstDOsat = BurstData(WqLocDOSat)
+        If WqLocDOmgL > 0 Then BurstDOmgL = BurstData(WqLocDOmgL)
+        If WqLocDepthFt > 0 Then BurstDepthFt = BurstData(WqLocDepthFt)
+        If WqLocDepthM > 0 Then BurstDepthM = BurstData(WqLocDepthM)
+        If WqLocBatt > 0 Then BurstBattV = BurstData(WqLocBatt)
+        If WqLocpH > 0 Then BurstpH = BurstData(WqLocpH)
+        If WqLocpHmV > 0 Then BurstpHmV = BurstData(WqLocpHmV)
+        If WqLocORP > 0 Then BurstORP = BurstData(WqLocORP)
+        If WqLocChlugL > 0 Then BurstChlugL = BurstData(WqLocChlugL)
+        If WqLocChlRFU > 0 Then BurstChlRFU = BurstData(WqLocChlRFU)
+        If WqLocBGApcRFU > 0 Then BurstBGArfu = BurstData(WqLocBGApcRFU)
+        If WqLocBGApcugL > 0 Then BurstBGAugL = BurstData(WqLocBGApcugL)
+        If WqLocFdomRFU > 0 Then BurstFdomRFU = BurstData(WqLocFdomRFU)
+        If WqLocFdomQSU > 0 Then BurstFdomQSU = BurstData(WqLocFdomQSU)
+        If WqLocNH4 > 0 Then BurstNH4mgL = BurstData(WqLocNH4)
+        If WqLocNO3 > 0 Then BurstNO3mgL = BurstData(WqLocNO3)
+        If WqLocCL > 0 Then BurstCLmgL = BurstData(WqLocCL)
+        If WqLocWiperPos > 0 Then BurstWiperPos = BurstData(WqLocWiperPos)
+      EndSub 'Parse burst
 
-    Sub CopyMedBurstVals 'Copy values from "Burst" table to holder for AQ table
-      MedBurstDate = Burst.BurstDate_Med
-      MedBurstTime = Burst.BurstTime_Med
-      MedBurstTime = Round(MedBurstTime,0) 'round the time because the median value of an even set of numbers is the average of the two median values
-      MedTempC = Burst.BurstTempC_Med
-      MedTempF = Burst.BurstTempF_Med
-      MedSpCond = Burst.BurstSpCond_Med
-      MedTurbFNU = Burst.BurstTurbFNU_Med
-      MedDOsat = Burst.BurstDOSat_Med
-      MedDOmgL= Burst.BurstDOmgL_Med
-      MedORP= Burst.BurstORP_Med
-      MedDepthFt = Burst.BurstDepthFt_Med
-      MedDepthM = Burst.BurstDepthM_Med
-      MedBattV= Burst.BurstBattV_Med
-      MedpH= Burst.BurstpH_Med
-      MedpHmV= Burst.BurstpHmV_Med
-      MedChlugL= Burst.BurstChlugL_Med
-      MedChlRFU= Burst.BurstChlRFU_Med
-      MedBGArfu= Burst.BurstBGARFU_Med
-      MedBGAugL= Burst.BurstBGAugL_Med
-      MedFdomRFU= Burst.BurstFdomRFU_Med
-      MedFdomQSU= Burst.BurstFDomQSU_Med
-      MedNH4mgL= Burst.BurstNH4mgl_Med
-      MedNO3mgL= Burst.BurstNO3mgl_Med
-      MedCLmgL= Burst.BurstCLmgl_Med
-      MedWiperPos= Burst.BurstWiperPos_Med
-    EndSub 'copy from Burst table to variable for AQ
+      Sub CopyMedBurstVals 'Copy values from "Burst" table to holder for AQ table
+        MedBurstDate = Burst.BurstDate_Med
+        MedBurstTime = Burst.BurstTime_Med
+        MedBurstTime = Round(MedBurstTime,0) 'round the time because the median value of an even set of numbers is the average of the two median values
+        MedTempC = Burst.BurstTempC_Med
+        MedTempF = Burst.BurstTempF_Med
+        MedSpCond = Burst.BurstSpCond_Med
+        MedTurbFNU = Burst.BurstTurbFNU_Med
+        MedDOsat = Burst.BurstDOSat_Med
+        MedDOmgL= Burst.BurstDOmgL_Med
+        MedORP= Burst.BurstORP_Med
+        MedDepthFt = Burst.BurstDepthFt_Med
+        MedDepthM = Burst.BurstDepthM_Med
+        MedBattV= Burst.BurstBattV_Med
+        MedpH= Burst.BurstpH_Med
+        MedpHmV= Burst.BurstpHmV_Med
+        MedChlugL= Burst.BurstChlugL_Med
+        MedChlRFU= Burst.BurstChlRFU_Med
+        MedBGArfu= Burst.BurstBGARFU_Med
+        MedBGAugL= Burst.BurstBGAugL_Med
+        MedFdomRFU= Burst.BurstFdomRFU_Med
+        MedFdomQSU= Burst.BurstFDomQSU_Med
+        MedNH4mgL= Burst.BurstNH4mgl_Med
+        MedNO3mgL= Burst.BurstNO3mgl_Med
+        MedCLmgL= Burst.BurstCLmgl_Med
+        MedWiperPos= Burst.BurstWiperPos_Med
+      EndSub 'copy from Burst table to variable for AQ
 
-    Sub ResetBurstVars 'Reset Burst Variables to NANs
-      MedBurstDate = BadDataIndicator
-      MedBurstTime = BadDataIndicator
-      MedTempC = BadDataIndicator
-      MedTempF = BadDataIndicator
-      MedSpCond = BadDataIndicator
-      MedTurbFNU = BadDataIndicator
-      MedDOsat = BadDataIndicator
-      MedDOmgL= BadDataIndicator
-      MedORP= BadDataIndicator
-      MedDepthFt = BadDataIndicator
-      MedDepthM = BadDataIndicator
-      MedBattV= BadDataIndicator
-      MedpH= BadDataIndicator
-      MedpHmV= BadDataIndicator
-      MedChlugL= BadDataIndicator
-      MedChlRFU= BadDataIndicator
-      MedBGArfu= BadDataIndicator
-      MedBGAugL= BadDataIndicator
-      MedFdomRFU= BadDataIndicator
-      MedFdomQSU= BadDataIndicator
-      MedNH4mgL= BadDataIndicator
-      MedNO3mgL= BadDataIndicator
-      MedCLmgL= BadDataIndicator
-      MedWiperPos= BadDataIndicator
-    EndSub 'reset to NANs
-  #EndIf 'If Burst only
-#EndIf 'If serial communications
+      Sub ResetBurstVars 'Reset Burst Variables to NANs
+        MedBurstDate = BadDataIndicator
+        MedBurstTime = BadDataIndicator
+        MedTempC = BadDataIndicator
+        MedTempF = BadDataIndicator
+        MedSpCond = BadDataIndicator
+        MedTurbFNU = BadDataIndicator
+        MedDOsat = BadDataIndicator
+        MedDOmgL= BadDataIndicator
+        MedORP= BadDataIndicator
+        MedDepthFt = BadDataIndicator
+        MedDepthM = BadDataIndicator
+        MedBattV= BadDataIndicator
+        MedpH= BadDataIndicator
+        MedpHmV= BadDataIndicator
+        MedChlugL= BadDataIndicator
+        MedChlRFU= BadDataIndicator
+        MedBGArfu= BadDataIndicator
+        MedBGAugL= BadDataIndicator
+        MedFdomRFU= BadDataIndicator
+        MedFdomQSU= BadDataIndicator
+        MedNH4mgL= BadDataIndicator
+        MedNO3mgL= BadDataIndicator
+        MedCLmgL= BadDataIndicator
+        MedWiperPos= BadDataIndicator
+      EndSub 'reset to NANs
+    #EndIf 'If Burst only
+  #EndIf 'If serial communications
 #EndIf  'If we have a sonde or not
 
 BeginProg
@@ -908,42 +942,45 @@ BeginProg
     Call ModTiming
     Battery (StationVolts)
     PanelTemp(LoggerTempC,60)
-  #If WqSonde <> "NONE" Then
-    #If WqSonde = "WQ_SERIAL_BURST" Then
-      Call BurstStartTimer
-    #EndIf
-    Call PowerWqSonde
-    #If WqSonde = "WQ_SERIAL" OR WqSonde = "WQ_SERIAL_BURST" Then 'if serial
-      Call SetEXOTime 'we can set the clock
-    #EndIf
-    Call CycleWqPower
-    If Redeploy = True Then
-      Call ParamCheck
-      Delay (1,10,mSec)
-      Call DefineParamsOrder
-      Delay (1,10,mSec)
-      Call DefineWqLocs
-      Delay (1,10,mSec)
-      #If WqSonde = "WQ_SERIAL" OR WqSonde = "WQ_SERIAL_BURST" Then
-        Call SetDelim
-        Delay (1,10,mSec)
+    #If WqSonde <> "NONE" Then
+       Call PowerWqSonde
+      #If WqSonde = "WQ_SERIAL_BURST" Then
+        Call BurstStartTimer
       #EndIf
-      Redeploy = False
-    EndIf
-    Call GetWQData 'get a single data point
-    #If WqSonde = "WQ_SERIAL" OR WqSonde = "WQ_SERIAL_BURST" Then
-      Call WipeWQ 'Call for wipe AFTER we get a data point (until we build logic to handle this before, if we want)
+      #If WqSonde = "WQ_SERIAL" OR WqSonde = "WQ_SERIAL_BURST" Then 'if serial
+        Call SetEXOTime 'we can set the clock
+      #EndIf
+      If Redeploy = True Then
+        Call ParamCheck
+        Delay (1,10,mSec)
+        Call DefineParamsOrder
+        Delay (1,10,mSec)
+        Call DefineWqLocs
+        Delay (1,10,mSec)
+        #If WqSonde = "WQ_SERIAL" OR WqSonde = "WQ_SERIAL_BURST" Then
+          Call SetDelim
+          Delay (1,10,mSec)
+        #EndIf
+        Redeploy = False
+      EndIf
+      If WqErrCount >= MaxWqErrCnt AND WqPwrCycleCnt >= MaxWqErrCnt Then
+      Call CycleWqPower
+      EndIf
+      Call GetWQData 'get a single data point
+      #If WqSonde = "WQ_SERIAL" OR WqSonde = "WQ_SERIAL_BURST" Then
+        Call WipeWQ 'Call for wipe AFTER we get a data point (until we build logic to handle this before, if we want)
+      #EndIf
+      Delay (1,30,mSec)
+      Call ParseWQData 'Parse the data
+      #If WqSonde = "WQ_SERIAL_BURST" Then
+        Call BurstDelayLoop
+        Call SetBurst
+        Call BuildBurstArray
+        Call DeconBurstArray
+        Call ParseBurst
+      #EndIf
     #EndIf
-    Delay (1,30,mSec)
-    Call ParseWQData 'Parse the data
-    #If WqSonde = "WQ_SERIAL_BURST" Then
-      Call BurstDelayLoop
-      Call SetBurst
-      Call BuildBurstArray
-      Call DeconBurstArray
-      Call ParseBurst
-    #EndIf
-  #EndIf
+    CallTable SVMaq
     CallTable Aquarius
   NextScan
 EndProg
